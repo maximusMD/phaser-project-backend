@@ -21,6 +21,8 @@ app.use((err, req, res, next) => {
 app.use((err, req, res, next) => {
     if (err.code === 400) {
         res.status(400).send({ Error: "Bad request" })
+    } else {
+        next(err);
     }
 })
 
