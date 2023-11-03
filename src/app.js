@@ -1,5 +1,5 @@
 import express from 'express';
-import { getPlayer, patchPlayer, postPlayer } from './mongo_functions.js';
+import { getPlayer, patchPlayer, postPlayer } from './controllers.js';
 import cors from 'cors';
 
 const app = express();
@@ -11,8 +11,21 @@ app.patch("/users/:username", patchPlayer)
 app.post("/users/", postPlayer)
 
 app.use((err, req, res, next) => {
-    console.log(err);
-    res.status(404).send({err})
+    if (err.code === 404) {
+        res.status(404).send({ Error: "Not found" })
+    } else {
+        next(err);
+    }
+})
+
+app.use((err, req, res, next) => {
+    if (err.code === 400) {
+        res.status(400).send({ Error: "Bad request" })
+    }
+})
+
+app.use((err, req, res, next) => {
+    res.status(500).send({Error: "Internal error"})
 })
 
 export default app; 
