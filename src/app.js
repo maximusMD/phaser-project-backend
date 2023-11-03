@@ -12,7 +12,7 @@ app.post("/users/", postPlayer)
 
 app.use((err, req, res, next) => {
     if (err.code === 404) {
-        res.status(404).send({ Error: "Not found" })
+        res.status(404).send({ Error: err.message ?? "Not found"})
     } else {
         next(err);
     }
@@ -20,7 +20,7 @@ app.use((err, req, res, next) => {
 
 app.use((err, req, res, next) => {
     if (err.code === 400) {
-        res.status(400).send({ Error: "Bad request" })
+        res.status(400).send({ Error: err.message ?? "Bad request" })
     } else {
         next(err);
     }

@@ -3,17 +3,24 @@ import { generateSaltedPassword, comparePasswords } from "./hash_utils.js";
 
 
 export async function getPlayerModel(req) {
+
+    if (!req.body.hasOwnProperty("password")) throw ({ code: 400 })
+
     await mongoClient.connect();
     const db = mongoClient.db('game_practise');
     const collection = db.collection('players');
 
+
     const data = await collection.find({ username: req.params.username }).toArray();
-    
-    const checkPassword = await comparePasswords(req.body.password, data[0].password)
+
+    if (!data.length) throw ({ code: 404 , message: "Bad login"})
+
+    const checkPassword = await comparePasswords(req.body.password, data[0]?.password)
+
     if (checkPassword) {
-        return ({User: data})
+        return ({ User: data })
     } else {
-        throw ({code: 404});
+        throw ({ code: 404, message: "Bad login" });
     }
 
 }
