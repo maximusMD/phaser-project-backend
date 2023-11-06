@@ -2,14 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-const { postPlayerController } = require('./controllers/controllers.js');
+const { postPlayerController, getPlayerController } = require('./controllers/controllers.js');
 
 app.use(cors());
 app.use(express.json());
 
-// app.get('/users/:username', getPlayer);
+// app.get('/api/users/:username', getPlayerController);
 // app.patch('/users/:username', patchPlayer);
 app.post('/api/users', postPlayerController);
+// app.get('/api/users/:username', getPlayerController);
 
 app.use((err, req, res, next) => {
 	if (err.code === 404) {

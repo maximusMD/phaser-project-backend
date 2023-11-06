@@ -1,55 +1,35 @@
 const { connectToDB, closeDBConnection } = require('../connection.js');
-// import { generateSaltedPassword, comparePasswords } from "../utils/hash_utils.js";
+const { generateSaltedPassword, comparePasswords } = require('../utils/hash_utils.js');
 
-// export async function getPlayerModel(req) {
+// exports.getPlayerModel = async (req) => {
+// 	console.log(req.params.username);
+// 	if (!req.body.hasOwnProperty('password')) return { code: 400 };
+// 	const { client, db } = await connectToDB();
+// 	const collection = db.collection('users');
+// 	const data = await collection.find({ username: req.param.username }).toArray();
 
-//     if (!req.body.hasOwnProperty("password")) throw ({ code: 400 })
+// 	if (!data.length) return { code: 404, message: 'Bad login' };
 
-//     await mongoClient.connect();
-//     const db = mongoClient.db('game_practise');
-//     const collection = db.collection('players');
+// 	const checkPassword = await comparePasswords(req.body.password, data[0]?.password);
 
-//     const data = await collection.find({ username: req.params.username }).toArray();
+// 	if (checkPassword) {
+// 		closeDBConnection(client);
+// 		return { User: data };
+// 	} else {
+// 		return { code: 404, message: 'Bad login' };
+// 	}
+// };
 
-//     if (!data.length) throw ({ code: 404 , message: "Bad login"})
-
-//     const checkPassword = await comparePasswords(req.body.password, data[0]?.password)
-
-//     if (checkPassword) {
-//         return ({ User: data })
-//     } else {
-//         throw ({ code: 404, message: "Bad login" });
-//     }
-
-// }
-
-// export async function patchPlayerModel() {
-//     console.log("in model patchplayer")
-
-// }
-// export async function postPlayerModel(body) {
-//     if (body.hasOwnProperty("username") && body.hasOwnProperty("password")) {
-//         const saltedPassword = await generateSaltedPassword(body.password);
-//         const newUserObj = { ...body }
-//         newUserObj.password = saltedPassword;
-//         newUserObj.experience = 0;
-//         newUserObj.other_default_props = [];
-
-//         await mongoClient.connect();
-//         const db = mongoClient.db('game_practise');
-//         const collection = db.collection('players');
-//         await collection.insertOne(newUserObj)
-
-//         return { New_User: newUserObj }
-
-//     } else {
-//         throw ({ code: 400 })
-//     }
-// }
-
-exports.postPlayerModel = async (user) => {
-	const { client, db } = await connectToDB();
-	await db.collection('users').insertOne({ user });
-	closeDBConnection(client);
-	return { user };
+exports.postPlayerModel = async (body) => {
+	if (body.hasOwnProperty('username') && body.hasOwnProperty('password')) {
+		const saltedPassword = await generateSaltedPassword(body.password);
+		const user = { ...body };
+		user.password = saltedPassword;
+		const { client, db } = await connectToDB();
+		await db.collection('users').insertOne({ user });
+		closeDBConnection(client);
+		return { user };
+	} else {
+		return { status: 400, message: 'Bad request' };
+	}
 };

@@ -1,13 +1,13 @@
-const { postPlayerModel } = require('../models/models');
+const { postPlayerModel, getPlayerModel } = require('../models/models');
 
-// export async function getPlayer(req, res, next) {
-//     try {
-//         const result = await getPlayerModel(req);
-//         res.status(200).send(result)
-//     } catch (err) {
-//         next(err);
-//     }
-// }
+// exports.getPlayerController = async (req, res, next) => {
+// 	try {
+// 		const result = await getPlayerModel(req);
+// 		res.status(200).send(result);
+// 	} catch (err) {
+// 		next(err);
+// 	}
+// };
 
 // export async function patchPlayer(req, res, next) {
 //     try {
