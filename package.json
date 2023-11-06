@@ -1,19 +1,29 @@
 {
-  "name": "mongo_db",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "bcrypt": "^5.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "mongodb": "^6.2.0"
-  }
+	"name": "dungeon_crawler",
+	"version": "1.0.0",
+	"description": "project-name",
+	"main": "listen.js",
+	"scripts": {
+		"start": "node listen.js",
+		"test": "jest"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/maximusMD/phaser-project-backend.git"
+	},
+	"author": "wavy-project-gang",
+	"license": "ISC",
+	"devDependencies": {
+		"jest": "^27.5.1",
+		"jest-extended": "^2.0.0",
+		"jest-sorted": "^1.0.14",
+		"supertest": "^6.3.3"
+	},
+	"dependencies": {
+		"bcrypt": "^5.1.1",
+		"cors": "^2.8.5",
+		"dotenv": "^16.3.1",
+		"express": "^4.18.2",
+		"mongodb": "^6.2.0"
+	}
 }
