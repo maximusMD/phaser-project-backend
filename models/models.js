@@ -1,34 +1,48 @@
 const { connectToDB, closeDBConnection } = require('../connection.js');
 const { generateSaltedPassword, comparePasswords } = require('../utils/hash_utils.js');
 
-// exports.getPlayerModel = async (req) => {
-// 	console.log(req.params.username);
-// 	if (!req.body.hasOwnProperty('password')) return { code: 400 };
-// 	const { client, db } = await connectToDB();
-// 	const collection = db.collection('users');
-// 	const data = await collection.find({ username: req.param.username }).toArray();
+exports.loginPlayerModel = async (body) => {
+	if (body.hasOwnProperty('username') && body.hasOwnProperty('password')) {
+		const { client, db } = await connectToDB();
+		const collection = db.collection('users');
 
-// 	if (!data.length) return { code: 404, message: 'Bad login' };
+		const data = await collection.find({ 'user.username': body.username }).toArray();
 
-// 	const checkPassword = await comparePasswords(req.body.password, data[0]?.password);
+		if (!data.length) {
+			closeDBConnection(client);
+			return { code: 404, message: 'Bad login' };
+		}
 
-// 	if (checkPassword) {
-// 		closeDBConnection(client);
-// 		return { User: data };
-// 	} else {
-// 		return { code: 404, message: 'Bad login' };
-// 	}
-// };
+		const checkPassword = await comparePasswords(body.password, data[0].user.password);
+
+		if (checkPassword) {
+			closeDBConnection(client);
+			return { user: data };
+		} else {
+			return { code: 404, message: 'Bad login' };
+		}
+	}
+};
 
 exports.postPlayerModel = async (body) => {
 	if (body.hasOwnProperty('username') && body.hasOwnProperty('password')) {
-		const saltedPassword = await generateSaltedPassword(body.password);
-		const user = { ...body };
-		user.password = saltedPassword;
 		const { client, db } = await connectToDB();
-		await db.collection('users').insertOne({ user });
-		closeDBConnection(client);
-		return { user };
+
+		const collection = db.collection('users');
+		const data = await collection.find({ 'user.username': body.username }).toArray();
+
+		//check if user already exists
+		if (data.length > 0 && data[0].user.username === body.username) {
+			return { status: 400, message: 'Bad request' };
+		} else {
+			const saltedPassword = await generateSaltedPassword(body.password);
+			const user = { ...body };
+			user.password = saltedPassword;
+
+			await db.collection('users').insertOne({ user });
+			closeDBConnection(client);
+			return { user };
+		}
 	} else {
 		return { status: 400, message: 'Bad request' };
 	}
