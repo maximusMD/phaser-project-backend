@@ -10,7 +10,7 @@ beforeAll(async () => {
   db = connection.db;
 
   await db.collection("users").deleteMany({});
-
+  await db.collection("leaderboard").deleteMany({});
   // Seed at least 3 users
   const usersToInsert = [
     {
@@ -44,6 +44,37 @@ beforeAll(async () => {
       },
     },
   ];
+  const leaderboardEntry = [
+    {
+      user_id: 1234,
+      avatar: "avatar.jpeg",
+      username: "user123",
+      highScore: 1000000,
+      date: new Date(),
+      totalHighScore: 12345,
+      level: "Ryans level",
+    },
+    {
+      user_id: 1234,
+      avatar: "avatar.jpeg",
+      username: "user123",
+      highScore: 2000,
+      date: new Date(),
+      totalHighScore: 1234567,
+      level: "Ryans level",
+    },
+    {
+      user_id: 1223,
+      avatar: "avatar.jpeg",
+      username: "user2",
+      highScore: 100,
+      date: new Date(),
+      totalHighScore: 12345,
+      level: "Ryans level",
+    },
+  ];
+
+  await db.collection("leaderboard").insertMany(leaderboardEntry);
 
   await db.collection("users").insertMany(usersToInsert);
 });
@@ -91,6 +122,7 @@ describe("/api/users", () => {
       username: expect.any(String),
       password: expect.any(String),
     });
+    expect(response.body.user[0].user.username).toBe("user123");
   });
 
   test("PATCH:200 update users highscore", async () => {
@@ -117,9 +149,9 @@ describe("/api/users", () => {
     expect(response.body.users).toBeInstanceOf(Array);
   });
   test("GET:200 returns single user", async () => {
-    const response = await request(app).get("/api/users/user3");
+    const response = await request(app).get("/api/users/user123");
     expect(response.status).toBe(200);
-    expect(response.body.user.username).toBe("user3");
+    expect(response.body.user.username).toBe("user123");
   });
   test("Handles errors", async () => {
     const response = await request(app).get("/api/users/not-a-valid-username");
@@ -130,9 +162,47 @@ describe("/api/users", () => {
     const response = await request(app).get("/api/leaderboard");
     expect(response.body).toBeInstanceOf(Array);
     response.body.forEach((entry) => {
-      expect(entry.user).toHaveProperty("highScore");
-      expect(entry.user).toHaveProperty("username");
-      expect(entry.user).toHaveProperty("avatar");
+      expect(entry).toHaveProperty("highScore");
+      expect(entry).toHaveProperty("username");
+    });
+  });
+});
+describe("leaderboards", () => {
+  let authToken;
+  const user = {
+    username: "user123",
+    password: "pass123",
+  };
+  beforeAll(async () => {
+    const loginResponse = await request(app)
+      .post("/api/users/login")
+      .send(user);
+    authToken = JSON.stringify(loginResponse.body.user[0]);
+  });
+  test("POST: 201, post new scores per level", async () => {
+    const response = await request(app)
+      .post("/api/leaderboard")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ highScore: 500 });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.body.message).toBe("entry created");
+  });
+  test("PATCH /api/leaderboard should update entry", async () => {
+    const response = await request(app)
+      .patch("/api/leaderboard/user123")
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({ highScore: 777 });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.message).toBe("entry updated");
+  });
+  test("GET: 200, sends an array of single user highscores", async () => {
+    const response = await request(app).get("/api/leaderboard/user123");
+    expect(response.body).toBeInstanceOf(Array);
+    response.body.forEach((entry) => {
+      expect(entry).toHaveProperty("highScore");
+      expect(entry).toHaveProperty("username");
     });
   });
 });

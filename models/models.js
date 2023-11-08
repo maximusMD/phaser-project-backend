@@ -12,22 +12,19 @@ exports.loginPlayerModel = async (body) => {
     const data = await collection
       .find({ "user.username": body.username })
       .toArray();
-
     if (!data.length) {
       closeDBConnection(client);
       return { code: 404, message: "Bad login" };
     }
-
     const checkPassword = await comparePasswords(
       body.password,
       data[0].user.password
     );
-
     if (checkPassword) {
       closeDBConnection(client);
       return { user: data };
     } else {
-      return { code: 404, message: "Bad login" };
+      return { code: 404, message: "Bad login<<<" };
     }
   }
 };
@@ -98,12 +95,10 @@ exports.fetchAllUsers = async () => {
 
   return { users: data };
 };
-exports.fetchUser = async (req) => {
+exports.fetchUser = async (username) => {
   const { client, db } = await connectToDB();
   const collection = db.collection("users");
-  const data = await collection
-    .find({ "user.username": req.params.username })
-    .toArray();
+  const data = await collection.find({ "user.username": username }).toArray();
   closeDBConnection(client);
   if (data.length === 0) {
     const error = new Error("User not found");
@@ -116,21 +111,101 @@ exports.fetchUser = async (req) => {
 
 exports.fetchLeaderboard = async () => {
   const { client, db } = await connectToDB();
-  const collection = db.collection("users");
+  const collection = db.collection("leaderboard");
   const data = await collection
     .find(
       {},
       {
         projection: {
-          "user.username": 1,
-          "user.highScore": 1,
-          "user.avatar": 1,
+          user_id: 1,
+          username: 1,
+          highScore: 1,
+          avatar: 1,
         },
       }
     )
-    .sort({ "user.highScore": -1 })
+    .sort({ highScore: -1 })
     .limit(10)
     .toArray();
   closeDBConnection(client);
+  return data;
+};
+
+exports.postLeaderboardEntry = async (req) => {
+  const auth = JSON.parse(req.headers.authorization.split("Bearer ")[1]);
+  const login = auth.user.username;
+  const id = auth._id;
+
+  const user = await this.fetchUser(login);
+
+  if (!(user.user.password === auth.user.password)) {
+    return { status: 401, message: "Unauthorized" };
+  }
+
+  const leaderboardEntry = {
+    user_id: id,
+    avatar: "avatar.jpeg",
+    username: user.user.username,
+    highScore: req.body.highScore,
+    date: new Date(),
+    totalHighScore: user.user.highScore,
+    level: "current level",
+  };
+  const { client, db } = await connectToDB();
+  const collection = db.collection("leaderboard");
+
+  const result = await collection.insertOne(leaderboardEntry);
+
+  closeDBConnection(client);
+
+  return { status: 201, message: "entry created" };
+};
+exports.patchLeaderboardEntry = async (req) => {
+  const auth = JSON.parse(req.headers.authorization.split("Bearer ")[1]);
+  const login = auth.user.username;
+  const id = auth._id;
+
+  const user = await this.fetchUser(login);
+
+  if (!(user.user.password === auth.user.password)) {
+    return { status: 401, message: "Unauthorized" };
+  }
+
+  const { client, db } = await connectToDB();
+  const collection = db.collection("leaderboard");
+
+  const username = user.user.username;
+  const highScore = req.body.highScore;
+  const result = await collection.updateOne(
+    { username },
+    {
+      $set: {
+        highScore,
+        date: new Date(),
+        totalHighScore: user.user.highScore,
+      },
+    }
+  );
+  closeDBConnection(client);
+
+  return { status: 200, message: "entry updated" };
+};
+exports.getSingleLeaderboardEntry = async (req) => {
+  const { client, db } = await connectToDB();
+  const collection = db.collection("leaderboard");
+  const data = await collection
+    .find(req.params, {
+      projection: {
+        user_id: 1,
+        username: 1,
+        highScore: 1,
+        avatar: 1,
+      },
+    })
+    .sort({ highScore: -1 })
+    .limit(10)
+    .toArray();
+  closeDBConnection(client);
+  console.log(data);
   return data;
 };

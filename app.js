@@ -9,6 +9,9 @@ const {
   getAllUsersController,
   getUserController,
   getLeaderboardController,
+  postLeaderboardController,
+  patchLeaderboardController,
+  getSinglePlayerLeaderController,
 } = require("./controllers/controllers.js");
 const {
   handleCustomErrors,
@@ -26,6 +29,9 @@ app.post("/api/users/login", loginPlayerController);
 app.patch("/api/users/:username", pathHighscoreController);
 app.get("/api/users/:username", getUserController);
 app.get("/api/leaderboard", getLeaderboardController);
+app.post("/api/leaderboard", postLeaderboardController);
+app.patch("/api/leaderboard/:username", patchLeaderboardController);
+app.get("/api/leaderboard/:username", getSinglePlayerLeaderController);
 
 app.all("/*", handleWrongPathErrors);
 app.use(handlePSQLError);
