@@ -6,9 +6,10 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 *.vscode
+.env.*
 
 # Vendors
-node_modules/
+node_modules
 
 # Build
 dist/
