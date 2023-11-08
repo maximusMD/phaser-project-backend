@@ -5,9 +5,9 @@ const uri =
 const dbName = "dungeon_crawler";
 
 async function connectToDB() {
-  try {
-    const client = new MongoClient(uri);
+  const client = new MongoClient(uri);
 
+  try {
     await client.connect();
     console.log("Connected to the database");
 
@@ -15,16 +15,17 @@ async function connectToDB() {
 
     return { client, db };
   } catch (err) {
-    console.error("Error occurred while connecting to the database", err);
+    console.error("Error occurred while connecting to the database:", err);
+    throw err;
   }
 }
 
 async function closeDBConnection(client) {
   try {
     await client.close();
-    //console.log('Connection to the database is closed');
+    console.log("Connection to the database is closed");
   } catch (err) {
-    console.error("Error occurred while closing the database connection", err);
+    console.error("Error occurred while closing the database connection:", err);
   }
 }
 
