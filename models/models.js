@@ -206,6 +206,5 @@ exports.getSingleLeaderboardEntry = async (req) => {
     .limit(10)
     .toArray();
   closeDBConnection(client);
-  console.log(data);
   return data;
 };
